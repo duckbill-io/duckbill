@@ -8,7 +8,7 @@ func FindPost(name string) (*Post, error) {
 		return nil, err
 	}
 
-	err := post.scan()
+	err = post.scan()
 	if err != nil {
 		return nil, err
 	}
@@ -16,7 +16,7 @@ func FindPost(name string) (*Post, error) {
 }
 
 //  FindAllPosts 查找所有的文章
-func FindAllPosts() ([]*Post, error) {
+func FindAllPosts() (Posts, error) {
 	metas, err := findAllMetas()
 	if err != nil {
 		return nil, err
@@ -31,14 +31,21 @@ func FindAllPosts() ([]*Post, error) {
 }
 
 // findAllMetas 找找所有的元数据
-func findAllMetas() ([]*Meta, error) {
-	metas := make([]*Meta)
-	metas
+func findAllMetas() (Metas, error) {
+	metas := Metas{}
+	err := metas.scan()
+	if err != nil {
+		return nil, err
+	}
+	return metas, nil
 }
 
 // newPost 根据name初始化一个Post实例
 func newPost(name string) (*Post, error) {
-	meta := *findMeta(name)
+	meta, err := findMeta(name)
+	if  err != nil {
+		return nil, err
+	}
 	post, err := meta.post(false)
 	if err != nil {
 		return nil, err
