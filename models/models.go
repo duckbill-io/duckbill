@@ -32,7 +32,7 @@ func FindAllPosts() (Posts, error) {
 
 // findAllMetas 找找所有的元数据
 func findAllMetas() (Metas, error) {
-	metas := Metas{}
+	metas := Metas{&Meta{}}
 	err := metas.scan()
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func findAllMetas() (Metas, error) {
 // newPost 根据name初始化一个Post实例
 func newPost(name string) (*Post, error) {
 	meta, err := findMeta(name)
-	if  err != nil {
+	if err != nil {
 		return nil, err
 	}
 	post, err := meta.post(false)

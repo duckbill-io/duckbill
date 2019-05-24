@@ -2,8 +2,8 @@
 package router
 
 import (
-	"github.com/duckbill-io/duckbill/controllers"
 	"fmt"
+	"github.com/duckbill-io/duckbill/controllers"
 	"net/http"
 	"path"
 	"strings"

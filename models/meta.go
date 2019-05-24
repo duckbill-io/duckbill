@@ -6,11 +6,11 @@ import (
 
 // 文章元数据
 type Meta struct {
-	Name       string   // 标题
-	Intro      string   // 简介
-	created_at string   // 创建时间
-	updated_at string   // 最近更新时间
-	tags       []string // 标签列表
+	Name      string   // 标题
+	Intro     string   // 简介
+	CreatedAt string   // 创建时间
+	UpdatedAt string   // 最近更新时间
+	Tags      []string // 标签列表
 }
 
 // 文章元数据列表
@@ -35,16 +35,16 @@ func (m *Meta) post(hascontent bool) (*Post, error) {
 }
 
 // scan 扫描ms对应的元信息数据，并更新ms
-func (ms Metas) scan() (err error) {
+func (ms *Metas) scan() (err error) {
 	err = orm.Scan(ms)
 	return
 }
 
 // posts 扫描元数据列表对应的文章类表
-func (ms Metas) posts(hascontent bool) (posts Posts, err error) {
-	posts = make(Posts, len(ms))
-	for i, _ := range ms {
-		posts[i], err = ms[i].post(hascontent)
+func (ms *Metas) posts(hascontent bool) (posts Posts, err error) {
+	posts = make(Posts, len(*ms))
+	for i, _ := range *ms {
+		posts[i], err = (*ms)[i].post(hascontent)
 		if err != nil {
 			return
 		}

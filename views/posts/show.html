@@ -1,7 +1,10 @@
 {{ define "content" }}
 
-{{ .Content | toHTML }}
+{{ range .Tags }}
+{{ . }} |
+{{ end }}
 
+{{ .Content | toHTML }}
 {{ end }}
 
 

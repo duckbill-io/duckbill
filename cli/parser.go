@@ -3,7 +3,6 @@ package cli
 import (
 	"bytes"
 	"gopkg.in/russross/blackfriday.v2"
-	"html/template"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -111,16 +110,11 @@ func parse(filePath, toDir string) (err error) {
 	meta, post := re[1], re[2]
 	// 转换文件内容为html
 	post = blackfriday.Run(post)
-	_post := template.HTMLEscapeString(string(post))
-	post = []byte(_post)
-	post = bytes.ReplaceAll(post, []byte("\n"), []byte(""))
-	// 转换文件内容为json格式
-	post = tojson(post)
 	// 分别单独存储文章的元信息与内容
 	_, filename := filepath.Split(filePath)
 	filename = strings.TrimSuffix(filename, ".md")
 	metafilepath := filepath.Join(toDir, "metas", filename) + ".yml"
-	postfilepath := filepath.Join(toDir, "posts", filename) + ".json"
+	postfilepath := filepath.Join(toDir, "posts", filename) + ".html"
 	// 保存文件
 	postfile, err := os.Create(postfilepath)
 	if err != nil {
@@ -141,13 +135,4 @@ func parse(filePath, toDir string) (err error) {
 		return
 	}
 	return
-}
-
-// tojson 将内容装换为post的json形式
-func tojson(post []byte) []byte {
-	jsonpost := []byte("{\"content\": ")
-	jsonpost = append(jsonpost, []byte("\"")...)
-	jsonpost = append(jsonpost, post...)
-	jsonpost = append(jsonpost, []byte("\"}")...)
-	return jsonpost
 }

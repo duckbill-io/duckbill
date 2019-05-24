@@ -2,8 +2,8 @@
 package controllers
 
 import (
-	"github.com/duckbill-io/duckbill/render"
 	"github.com/duckbill-io/duckbill/models"
+	"github.com/duckbill-io/duckbill/render"
 	"io"
 	"log"
 )
