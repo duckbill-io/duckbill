@@ -32,6 +32,11 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	// tags index
 	if urlpath == "/tags" || urlpath == "/tags/" {
-		fmt.Fprint(w, "tags index")
+		controllers.Tags(w)
+	}
+	// show tag
+	if strings.HasPrefix(urlpath, "/tags/") && urlpath != "/tags/" {
+		_, tagname := path.Split(urlpath)
+		controllers.ShowTag(w, tagname)
 	}
 }
