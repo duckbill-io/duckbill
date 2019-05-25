@@ -22,7 +22,7 @@ func (t *Tag) scan() error {
 	if err != nil {
 		return err
 	}
-	*t.Articles = arts
+	t.Articles = arts
 	return nil
 }
 
@@ -34,10 +34,10 @@ func (ts *Tags) scan() error {
 
 // posts 查找打有该标签的文章
 func (t *Tag) articles() (Posts, error) {
-	postnames := *t.PostNames
+	postnames := t.PostNames
 	posts := make(Posts, len(postnames))
 	for i := range postnames {
-		*posts[i].Name = postnames[i]
+		posts[i].Name = postnames[i]
 		err := posts[i].scan()
 		if err != nil {
 			return nil, err
