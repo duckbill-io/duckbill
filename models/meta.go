@@ -1,9 +1,5 @@
 package models
 
-import (
-	"github.com/duckbill-io/duckbill/orm"
-)
-
 // 文章元数据
 type Meta struct {
 	Name      string   // 标题
@@ -18,7 +14,7 @@ type Metas []*Meta
 
 // scan 扫描对应的元信息数据，并更新Meta实例
 func (m *Meta) scan() (err error) {
-	err = orm.Scan(m)
+	err = scan(m)
 	return
 }
 
@@ -36,7 +32,7 @@ func (m *Meta) post(hascontent bool) (*Post, error) {
 
 // scan 扫描ms对应的元信息数据，并更新ms
 func (ms *Metas) scan() (err error) {
-	err = orm.Scan(ms)
+	err = scan(ms)
 	return
 }
 

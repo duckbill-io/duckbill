@@ -1,6 +1,10 @@
 // 博客引擎的model模块
 package models
 
+import (
+	"github.com/duckbill-io/duckbill/orm"
+)
+
 // FindPost 根据name查找对应的文章
 func FindPost(name string) (*Post, error) {
 	post, err := newPost(name)
@@ -67,4 +71,10 @@ func findMeta(name string) (*Meta, error) {
 // newMeat 根据name初始化一个Meta实例
 func newMeta(name string) *Meta {
 	return &Meta{Name: name}
+}
+
+// scan
+func scan(v interface{}) error {
+	err := orm.Scan(v)
+	return err
 }
