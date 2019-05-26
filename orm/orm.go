@@ -2,8 +2,8 @@
 package orm
 
 import (
+	"encoding/json"
 	"fmt"
-	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -74,8 +74,8 @@ func scan(v reflect.Value) error {
 func unmarshal(v reflect.Value) error {
 	prepare := func(v reflect.Value) (filename string, _unmarshal func([]byte, interface{}) error) {
 		if strings.HasSuffix(v.Type().String(), "Meta") {
-			filename = "_data/metas/" + fmt.Sprint(v.FieldByName("Name")) + ".yml"
-			_unmarshal = yaml.Unmarshal
+			filename = "_data/metas/" + fmt.Sprint(v.FieldByName("Name")) + ".json"
+			_unmarshal = json.Unmarshal
 		}
 		if strings.HasSuffix(v.Type().String(), "Post") {
 			filename = "_data/posts/" + fmt.Sprint(v.FieldByName("Name")) + ".html"

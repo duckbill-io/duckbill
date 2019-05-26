@@ -2,12 +2,15 @@ package cli
 
 import (
 	"bytes"
-	"gopkg.in/russross/blackfriday.v2"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"gopkg.in/russross/blackfriday.v2"
+	"gopkg.in/yaml.v2"
 )
 
 // Parser 解析器用于从FromDir解析所有的markdown文件到ToDir
@@ -108,12 +111,21 @@ func parse(filePath, toDir string) (err error) {
 	sep := []byte("---\n")
 	re := bytes.SplitN(postinfo, sep, 3)
 	meta, post := re[1], re[2]
+	// 转换meta为json
+	var body interface{}
+	if err = yaml.Unmarshal(meta, &body); err != nil {
+		return err
+	}
+	body = convert(body)
+	if meta, err = json.MarshalIndent(body, "", " "); err != nil {
+		return err
+	}
 	// 转换文件内容为html
 	post = blackfriday.Run(post)
 	// 分别单独存储文章的元信息与内容
 	_, filename := filepath.Split(filePath)
 	filename = strings.TrimSuffix(filename, ".md")
-	metafilepath := filepath.Join(toDir, "metas", filename) + ".yml"
+	metafilepath := filepath.Join(toDir, "metas", filename) + ".json"
 	postfilepath := filepath.Join(toDir, "posts", filename) + ".html"
 	// 保存文件
 	postfile, err := os.Create(postfilepath)
@@ -135,4 +147,20 @@ func parse(filePath, toDir string) (err error) {
 		return
 	}
 	return
+}
+
+func convert(i interface{}) interface{} {
+	switch x := i.(type) {
+	case map[interface{}]interface{}:
+		m2 := map[string]interface{}{}
+		for k, v := range x {
+			m2[k.(string)] = convert(v)
+		}
+		return m2
+	case []interface{}:
+		for i, v := range x {
+			x[i] = convert(v)
+		}
+	}
+	return i
 }
