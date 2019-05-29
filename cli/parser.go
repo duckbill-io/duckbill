@@ -2,165 +2,152 @@ package cli
 
 import (
 	"bytes"
-	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"encoding/json"
 	"gopkg.in/russross/blackfriday.v2"
 	"gopkg.in/yaml.v2"
 )
 
-// Parser 解析器用于从FromDir解析所有的markdown文件到ToDir
+// Parser 解析器 用于从FromDir解析所有的markdown文件到ToDir
 type Parser struct {
-	FromDir string // 解析器获取数据的文件夹
-	ToDir   string // 解析器输出数据的文件夹
+	inputdir   string        // 解析器获取数据的文件夹
+	inputinfos []os.FileInfo // inputdir中有效的文件信息列表
+	outputdir  string        // 解析器保存最终数据的文件夹
 }
 
-// NewParser 创建一Parser实例
-func NewParser(from, to string) *Parser {
+// NewParser　创建一个解析其
+func NewParser(inputdir, outputdir string) *Parser {
 	return &Parser{
-		FromDir: from,
-		ToDir:   to,
+		inputdir:  inputdir,
+		outputdir: outputdir,
 	}
 }
 
-// Fire 开始解析
-// 目前是全量解析，不是增量解析(要么全成功，要么全失败)
-func (p *Parser) Fire() (err error) {
-	filenames, err := getAllMarkDownFileNames(p.FromDir)
-	if err != nil {
-		return
-	}
-	// 清空p.ToDir
-	err = p.rebuildToDir()
-	if err != nil {
-		return
-	}
-	// 遍历每一个markdown文件, 并解析
-	for _, filename := range filenames {
-		err = parse(filename, p.ToDir)
-		if err != nil {
-			return
-		}
-	}
+// Run 开始解析
+// 目前是全量解析，而非增量(要么全部成功, 要么全部失败)
+func (p *Parser) Run() {
+	p.prepare()
+	// 遍历p.inputdir中的markdown文件, 完成解析
+	p.parse()
 	return
 }
 
-// rebuildToDir 清空p.ToDir并重建p.ToDir
-func (p *Parser) rebuildToDir() (err error) {
-	// 清空文件夹
-	err = os.RemoveAll(p.ToDir)
-	if err != nil {
-		return err
-	}
-	// 创建文件夹
-	err = os.Mkdir(p.ToDir, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	err = os.Mkdir(filepath.Join(p.ToDir, "posts"), os.ModePerm)
-	if err != nil {
-		return err
-	}
-	err = os.Mkdir(filepath.Join(p.ToDir, "metas"), os.ModePerm)
-	if err != nil {
-		return err
-	}
-	return
-}
-
-// getAllMarkDownFileNames 找出所有的markdown文件
-func getAllMarkDownFileNames(dirname string) ([]string, error) {
-	f, err := os.Open(dirname)
-	if err != nil {
-		return nil, err
-	}
+// prepare 准备工作(清空并重建p.outputdir/查找可用的input文件)
+func (p *Parser) prepare() {
+	// 清空并重建p.outputdir
+	p.rebuild()
+	// 查找文件夹中的所有内容
+	f, err := os.Open(p.inputdir)
+	checkerror(err)
 	list, err := f.Readdir(-1)
 	f.Close()
-	if err != nil {
-		return nil, err
-	}
-	// 筛选出list中为markdown文件的元素
-	names := make([]string, 0, len(list))
-	for i := range list {
+	checkerror(err)
+	// 筛选出有效的输入文件
+	for i, j := 0, 0; i < len(list); i++ {
 		if ispostmd(list[i]) {
-			names = append(names, filepath.Join(dirname, list[i].Name()))
+			list[j] = list[i]
+			j++
+		}
+		if i == len(list) {
+			list = list[:j]
 		}
 	}
-	// 排序
-	sort.Slice(names, func(i, j int) bool { return names[i] < names[j] })
-	return names, nil
+	sort.Slice(list, func(i, j int) bool { return list[i].Name() < list[j].Name() })
+	p.inputinfos = list
 }
 
-// ismd 判断是否是markdown文件
+func (p *Parser) rebuild() {
+	var err error
+	// 清空文件夹
+	err = os.RemoveAll(p.outputdir)
+	checkerror(err)
+	// 创建文件夹
+	err = os.Mkdir(p.outputdir, os.ModePerm)
+	checkerror(err)
+	for _, dir := range []string{"metas", "posts", "tags"} {
+		err = os.Mkdir(filepath.Join(p.outputdir, dir), os.ModePerm)
+		checkerror(err)
+	}
+}
+
+func (p *Parser) parse() {
+	tagsmap := map[string][]string{}
+	var err error
+
+	for i := range p.inputinfos {
+		mdfilename := filepath.Join(p.inputdir, p.inputinfos[i].Name())
+		// 分割文章元信息与内容
+		post, err := ioutil.ReadFile(mdfilename)
+		checkerror(err)
+		post = bytes.TrimSpace(post)
+		slicepost := bytes.SplitN(post, []byte("---\n"), 3)
+		ymlmeta, mdcontent := slicepost[1], slicepost[2]
+		// 文章内容转换为html
+		htmlcontent := blackfriday.Run(mdcontent)
+		// 反序列化文章元信息
+		metastruct := struct {
+			Name, CreatedAt string
+			Tags            []string
+		}{}
+		err = yaml.Unmarshal(ymlmeta, &metastruct)
+		checkerror(err)
+		// 序列化文章元信息为json格式
+		jsonmeta, err := json.MarshalIndent(metastruct, "", "")
+		// 保存jsonmeta与htmlcontent
+		filename := metastruct.Name
+		metafilepath := filepath.Join(p.outputdir, "metas", filename+".json")
+		contentfilepath := filepath.Join(p.outputdir, "posts", filename+".html")
+		metafile, err := os.Create(metafilepath)
+		checkerror(err)
+		_, err = metafile.Write(jsonmeta)
+		checkerror(err)
+		metafile.Close()
+		contentfile, err := os.Create(contentfilepath)
+		checkerror(err)
+		_, err = contentfile.Write(htmlcontent)
+		checkerror(err)
+		contentfile.Close()
+		// 通过文章元信息筛选出tagsmap映射
+		for i := range metastruct.Tags {
+			if _, exist := tagsmap[metastruct.Name]; !exist {
+				fmt.Println("tag: ", metastruct.Tags[i], "\n", "postname: ", metastruct.Name)
+				tagsmap[metastruct.Tags[i]] = []string{metastruct.Name}
+			} else {
+				tagsmap[metastruct.Tags[i]] = append(tagsmap[metastruct.Tags[i]], metastruct.Name)
+			}
+		}
+	}
+	// 反序列化tagsmap映射为单篇json格式文件
+	jsontags, err := json.Marshal(tagsmap)
+	tagsfilepath := filepath.Join(p.outputdir, "tags", "tags.json")
+	tagsfile, err := os.Create(tagsfilepath)
+	checkerror(err)
+	_, err = tagsfile.Write(jsontags)
+	checkerror(err)
+	tagsfile.Close()
+}
+
 func ispostmd(fi os.FileInfo) bool {
-	return strings.HasSuffix(fi.Name(), ".md") && !fi.IsDir() && fi.Name() != "README.md"
+	if fi.IsDir() {
+		return false
+	}
+	if !strings.HasSuffix(fi.Name(), ".md") {
+		return false
+	}
+	if fi.Name() == "README.md" {
+		return false
+	}
+	return true
 }
 
-// parse 解析文件
-func parse(filePath, toDir string) (err error) {
-	// 分割md文件中的文章元信息与内容
-	postinfo, err := ioutil.ReadFile(filePath)
+func checkerror(err error) {
 	if err != nil {
-		return
+		panic(err)
 	}
-	postinfo = bytes.TrimSpace(postinfo)
-	sep := []byte("---\n")
-	re := bytes.SplitN(postinfo, sep, 3)
-	meta, post := re[1], re[2]
-	// 转换meta为json
-	var body interface{}
-	if err = yaml.Unmarshal(meta, &body); err != nil {
-		return err
-	}
-	body = convert(body)
-	if meta, err = json.MarshalIndent(body, "", " "); err != nil {
-		return err
-	}
-	// 转换文件内容为html
-	post = blackfriday.Run(post)
-	// 分别单独存储文章的元信息与内容
-	_, filename := filepath.Split(filePath)
-	filename = strings.TrimSuffix(filename, ".md")
-	metafilepath := filepath.Join(toDir, "metas", filename) + ".json"
-	postfilepath := filepath.Join(toDir, "posts", filename) + ".html"
-	// 保存文件
-	postfile, err := os.Create(postfilepath)
-	if err != nil {
-		return
-	}
-	defer postfile.Close()
-	metafile, err := os.Create(metafilepath)
-	if err != nil {
-		return
-	}
-	defer metafile.Close()
-	_, err = postfile.Write(post)
-	if err != nil {
-		return
-	}
-	_, err = metafile.Write(meta)
-	if err != nil {
-		return
-	}
-	return
-}
-
-func convert(i interface{}) interface{} {
-	switch x := i.(type) {
-	case map[interface{}]interface{}:
-		m2 := map[string]interface{}{}
-		for k, v := range x {
-			m2[k.(string)] = convert(v)
-		}
-		return m2
-	case []interface{}:
-		for i, v := range x {
-			x[i] = convert(v)
-		}
-	}
-	return i
 }

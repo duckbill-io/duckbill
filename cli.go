@@ -14,5 +14,5 @@ func main() {
 	g := cli.NewGitter(RepoUrl, RepoDir)
 	g.Clone()
 	p := cli.NewParser(RepoDir, DataDir)
-	p.Fire()
+	p.Run()
 }
