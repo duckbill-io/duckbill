@@ -116,7 +116,6 @@ func (p *Parser) parse() {
 		// 通过文章元信息筛选出tagsmap映射
 		for i := range metastruct.Tags {
 			if _, exist := tagsmap[metastruct.Name]; !exist {
-				fmt.Println("tag: ", metastruct.Tags[i], "\n", "postname: ", metastruct.Name)
 				tagsmap[metastruct.Tags[i]] = []string{metastruct.Name}
 			} else {
 				tagsmap[metastruct.Tags[i]] = append(tagsmap[metastruct.Tags[i]], metastruct.Name)
@@ -124,15 +123,31 @@ func (p *Parser) parse() {
 		}
 	}
 	// 反序列化tagsmap映射为单篇json格式文件
-	jsontags, err := json.Marshal(tagsmap)
 	tagsfilepath := filepath.Join(p.outputdir, "tags", "tags.json")
 	tagsfile, err := os.Create(tagsfilepath)
 	checkerror(err)
-	_, err = tagsfile.Write(jsontags)
+	var buf bytes.Buffer
+	buf.WriteString("[")
+	for tagname, articles := range tagsmap {
+		buf.WriteString(fmt.Sprintf("{\"name\": \"%s\",", tagname))
+		buf.WriteString(fmt.Sprintf("\"count\": \"%d\",", len(articles)))
+		buf.WriteString("\"articles\": [")
+		for i := range articles {
+			buf.WriteString(fmt.Sprintf("\"%s\"", articles[i]))
+			if i < len(articles)-1 {
+				buf.WriteString(",")
+			}
+		}
+		buf.WriteString("]},\n")
+	}
+	buf.Truncate(buf.Len() - len(",\n"))
+	buf.WriteString("]")
+	_, err = tagsfile.Write([]byte(buf.String()))
 	checkerror(err)
 	tagsfile.Close()
 }
 
+// ispostmd 判断是否是文章的markdown文件
 func ispostmd(fi os.FileInfo) bool {
 	if fi.IsDir() {
 		return false
