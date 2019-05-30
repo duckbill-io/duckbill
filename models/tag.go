@@ -17,12 +17,14 @@ func (t *Tag) scan() error {
 	if err != nil {
 		return err
 	}
-	//　查找标签的所有实例
-	arts, err := t.articles()
-	if err != nil {
-		return err
+	//　查找标签的所有文章
+	t.Articles = make(Posts, len(t.PostNames))
+	for i := range t.PostNames {
+		t.Articles[i], err = newPost(t.PostNames[i])
+		if err != nil {
+			return err
+		}
 	}
-	t.Articles = arts
 	return nil
 }
 
@@ -32,17 +34,3 @@ func (ts *Tags) scan() error {
 	return err
 }
 
-// posts 查找打有该标签的文章
-func (t *Tag) articles() (Posts, error) {
-	postnames := t.PostNames
-	posts := make(Posts, len(postnames))
-	for i := range postnames {
-		posts[i] = &Post{}
-		posts[i].Name = postnames[i]
-		err := posts[i].scan()
-		if err != nil {
-			return nil, err
-		}
-	}
-	return posts, nil
-}

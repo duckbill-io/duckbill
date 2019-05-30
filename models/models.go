@@ -68,7 +68,7 @@ func newMeta(name string) *Meta {
 
 // findAllMetas 找找所有的元数据
 func findAllMetas() (Metas, error) {
-	metas := Metas{&Meta{}}
+	metas := Metas{}
 	err := metas.scan()
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func newTag(name string) *Tag {
 
 // FindAllTags 查找所有的标签
 func FindAllTags() (Tags, error) {
-	tags := Tags{&Tag{}}
+	tags := Tags{}
 	err := tags.scan()
 	if err != nil {
 		return nil, err
