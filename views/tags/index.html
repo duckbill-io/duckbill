@@ -1,0 +1,9 @@
+{{ define "content" }}
+
+{{ range . }}
+<li>
+    <p><a href="/tags/{{.Name}}">{{.Name}}({{.Count}})</a></p>
+</li>
+{{ end }}
+
+{{ end }}
