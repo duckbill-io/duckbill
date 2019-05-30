@@ -2,7 +2,6 @@
 package router
 
 import (
-	"fmt"
 	"github.com/duckbill-io/duckbill/controllers"
 	"net/http"
 	"path"
@@ -19,7 +18,11 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	urlpath := r.URL.Path
 	// home page
 	if urlpath == "/" {
-		fmt.Fprint(w, "hello duckbill")
+		controllers.Home(w)
+	}
+	// about page
+	if urlpath == "/about" || urlpath == "/about/" {
+		controllers.About(w)
 	}
 	// posts index
 	if urlpath == "/posts" || urlpath == "/posts/" {
@@ -28,7 +31,7 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// show post
 	if strings.HasPrefix(urlpath, "/posts/") && urlpath != "/posts/" {
 		_, postname := path.Split(urlpath)
-		controllers.ShowPost(w, postname)
+		controllers.Post(w, postname)
 	}
 	// tags index
 	if urlpath == "/tags" || urlpath == "/tags/" {
@@ -37,6 +40,6 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// show tag
 	if strings.HasPrefix(urlpath, "/tags/") && urlpath != "/tags/" {
 		_, tagname := path.Split(urlpath)
-		controllers.ShowTag(w, tagname)
+		controllers.Tag(w, tagname)
 	}
 }

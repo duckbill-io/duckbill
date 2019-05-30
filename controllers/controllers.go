@@ -9,7 +9,7 @@ import (
 )
 
 // 显示指定名称的文章
-func ShowPost(w io.Writer, name string) {
+func Post(w io.Writer, name string) {
 	post, err := models.FindPost(name)
 	if err != nil {
 		log.Fatal(err)
@@ -33,7 +33,7 @@ func Posts(w io.Writer) {
 }
 
 // 显示制定名称的标签
-func ShowTag(w io.Writer, name string) {
+func Tag(w io.Writer, name string) {
 	tag, err := models.FindTag(name)
 	if err != nil {
 		log.Fatal(err)
@@ -51,4 +51,15 @@ func Tags(w io.Writer) {
 
 	indexTemplate := "views/tags/index.html"
 	render.Execute(w, indexTemplate, tags)
+}
+
+// 主页
+func Home(w io.Writer) {
+	homeTemplate := "views/home.html"
+	render.Execute(w, homeTemplate, nil)
+}
+// 关于我
+func About(w io.Writer) {
+	aboutTemplate := "views/about.html"
+	render.Execute(w, aboutTemplate, nil)
 }
