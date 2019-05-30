@@ -8,9 +8,10 @@ import (
 )
 
 func main() {
+	r := router.New()
 	server := http.Server{
 		Addr:    "localhost:8080",
-		Handler: router.New(),
+		Handler: r,
 	}
 	log.Println("starting duckbill ...")
 	log.Fatal(server.ListenAndServe())

@@ -58,8 +58,15 @@ func Home(w io.Writer) {
 	homeTemplate := "views/home.html"
 	render.Execute(w, homeTemplate, nil)
 }
+
 // 关于我
 func About(w io.Writer) {
 	aboutTemplate := "views/about.html"
 	render.Execute(w, aboutTemplate, nil)
+}
+
+// 404 Not Found
+func NotFound(w io.Writer) {
+	notfoundTemplate := "views/404.html"
+	render.Execute(w, notfoundTemplate, nil)
 }
