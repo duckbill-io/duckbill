@@ -1,10 +1,6 @@
 // 博客引擎的model模块
 package models
 
-import (
-	"github.com/duckbill-io/duckbill/orm"
-)
-
 //	=====================
 //	=== Post 相关函数 ===
 //	=====================
@@ -114,6 +110,7 @@ func FindAllTags() (Tags, error) {
 //	=====================
 
 func scan(v interface{}) error {
-	err := orm.Scan(v)
+	orm := Orm{}
+	err := orm.scan(v)
 	return err
 }

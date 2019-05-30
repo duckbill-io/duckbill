@@ -2,10 +2,10 @@ package models
 
 // 标签
 type Tag struct {
-	Name      string   // 标签名称
-	Count     int      // 打有该标签的文章数量
+	Name      string   `json:"name"`  // 标签名称
+	Count     string   `json:"count"` // 打有该标签的文章数量
 	Articles  Posts    // 打有该标签的文章列表
-	PostNames []string // 打有该标签的文章名列表
+	PostNames []string `json:"articles"` // 打有该标签的文章名列表
 }
 
 // 标签列表
@@ -37,6 +37,7 @@ func (t *Tag) articles() (Posts, error) {
 	postnames := t.PostNames
 	posts := make(Posts, len(postnames))
 	for i := range postnames {
+		posts[i] = &Post{}
 		posts[i].Name = postnames[i]
 		err := posts[i].scan()
 		if err != nil {
