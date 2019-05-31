@@ -21,28 +21,22 @@ func NewGitter(repo, dir string) *Gitter {
 }
 
 // Clone 克隆远程仓库g.Repo中的文件到本地文件夹g.Dir(目前是全量更新)
-func (g *Gitter) Clone() (err error) {
-	if err = g.clearDir(); err != nil {
-		err = fmt.Errorf("clearDir: %v, err: %v", g.Dir, err)
-		return
-	}
-
+func (g *Gitter) Clone() {
+	g.clearDir()
+	checkerror(err)
 	err = g.cloneRepo()
-	if err != nil {
-		err = fmt.Errorf("cloneRepo: %v,\n err: %v", g.Repo, err)
-	}
-	return
+	checkerror(err)
 }
 
 // clear 清空g.Dir文件夹
-func (g *Gitter) clearDir() error {
+func (g *Gitter) clearDir() {
 	err := os.RemoveAll(g.Dir)
-	return err
+	checkerror(err)
 }
 
 // cloneRepo 克隆g.Repo文件到本地
 func (g *Gitter) cloneRepo() error {
 	cmd := exec.Command("git", "clone", g.Repo, g.Dir)
 	err := cmd.Run()
-	return err
+	checkerror(err)
 }
