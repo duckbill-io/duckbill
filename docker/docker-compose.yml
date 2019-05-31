@@ -6,4 +6,4 @@ services:
     - ../.:/go/src/duckbill-io/duckbill
     ports:
     - 8080:8080
-    command: bash -c "dep ensure && go run server.go"
+    command: bash -c "dep ensure && go run cli.go && go run server.go"
