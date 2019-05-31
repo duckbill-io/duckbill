@@ -1,2 +1,4 @@
 _posts
 _data
+/vendor
+*.swp
