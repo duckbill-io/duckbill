@@ -2,7 +2,6 @@
 package cli
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 )
@@ -23,9 +22,7 @@ func NewGitter(repo, dir string) *Gitter {
 // Clone 克隆远程仓库g.Repo中的文件到本地文件夹g.Dir(目前是全量更新)
 func (g *Gitter) Clone() {
 	g.clearDir()
-	checkerror(err)
-	err = g.cloneRepo()
-	checkerror(err)
+	g.cloneRepo()
 }
 
 // clear 清空g.Dir文件夹
@@ -35,7 +32,7 @@ func (g *Gitter) clearDir() {
 }
 
 // cloneRepo 克隆g.Repo文件到本地
-func (g *Gitter) cloneRepo() error {
+func (g *Gitter) cloneRepo() {
 	cmd := exec.Command("git", "clone", g.Repo, g.Dir)
 	err := cmd.Run()
 	checkerror(err)
