@@ -1,0 +1,9 @@
+version: '2.1'
+services:
+  iblog:
+    image: mind1949/duckbill:dev
+    volumes:
+    - ../.:/go/src/duckbill-io/duckbill
+    ports:
+    - 8080:8080
+    command: bash -c "dep ensure && go run server.go"
