@@ -2,13 +2,13 @@
 package main
 
 import (
-	"github.com/duckbill-io/duckbill/router"
+	"github.com/duckbill-io/duckbill/routes"
 	"log"
 	"net/http"
 )
 
 func main() {
-	r := router.New()
+	r := routes.DefaultRouter()
 	server := http.Server{
 		Addr:    "0.0.0.0:8080",
 		Handler: r,
