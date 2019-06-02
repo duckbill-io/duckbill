@@ -1,6 +1,7 @@
 version: '2.1'
 services:
   iblog:
+    container_name: ${container_name}
     image: mind1949/duckbill:dev
     volumes:
     - ../.:/go/src/duckbill-io/duckbill
