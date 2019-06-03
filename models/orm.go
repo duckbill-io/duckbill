@@ -17,22 +17,24 @@ func (orm *Orm) scan(vi interface{}) (err error) {
 	switch v := vi.(type) {
 	case *Tags:
 		tagsfilepath := "_data/tags/tags.json"
-		jsontags, err := ioutil.ReadFile(tagsfilepath)
+		tagsfile, err := os.Open(tagsfilepath)
+		defer tagsfile.Close()
 		if err != nil {
 			return err
 		}
-		err = json.Unmarshal(jsontags, v)
+		err = json.NewDecoder(tagsfile).Decode(v)
 		if err != nil {
 			return err
 		}
 	case *Tag:
 		tagsfilepath := "_data/tags/tags.json"
-		jsontags, err := ioutil.ReadFile(tagsfilepath)
+		tagsfile, err := os.Open(tagsfilepath)
+		defer tagsfile.Close()
 		if err != nil {
 			return err
 		}
 		tags := []Tag{}
-		err = json.Unmarshal(jsontags, &tags)
+		err = json.NewDecoder(tagsfile).Decode(&tags)
 		if err != nil {
 			return err
 		}
@@ -63,7 +65,7 @@ func (orm *Orm) scan(vi interface{}) (err error) {
 			}
 		}
 		// 读取所有元信息数据
-		var buf bytes.Buffer
+		buf := bytes.NewBuffer([]byte{})
 		buf.WriteString("[")
 		for i := range list {
 			metafilepath := filepath.Join(metasdir, list[i].Name())
@@ -77,17 +79,18 @@ func (orm *Orm) scan(vi interface{}) (err error) {
 		buf.Truncate(buf.Len() - len(","))
 		buf.WriteString("]")
 		// 反序列化元信息数据
-		err = json.Unmarshal([]byte(buf.String()), v)
+		err = json.NewDecoder(buf).Decode(v)
 		if err != nil {
 			return err
 		}
 	case *Meta:
 		metafilepath := filepath.Join("_data/metas", v.Name+".json")
-		jsonmeta, err := ioutil.ReadFile(metafilepath)
+		metafile, err := os.Open(metafilepath)
+		defer metafile.Close()
 		if err != nil {
 			return err
 		}
-		err = json.Unmarshal(jsonmeta, v)
+		err = json.NewDecoder(metafile).Decode(v)
 		if err != nil {
 			return err
 		}

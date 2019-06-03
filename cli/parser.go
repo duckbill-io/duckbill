@@ -97,15 +97,15 @@ func (p *Parser) parse() {
 		}{}
 		err = yaml.Unmarshal(ymlmeta, &metastruct)
 		checkerror(err)
-		// 序列化文章元信息为json格式
-		jsonmeta, err := json.MarshalIndent(metastruct, "", "")
-		// 保存jsonmeta与htmlcontent
+		// 保存htmlcontent并保存meta信息为json格式
 		filename := metastruct.Name
 		metafilepath := filepath.Join(p.outputdir, "metas", filename+".json")
 		contentfilepath := filepath.Join(p.outputdir, "posts", filename+".html")
 		metafile, err := os.Create(metafilepath)
 		checkerror(err)
-		_, err = metafile.Write(jsonmeta)
+		encoder := json.NewEncoder(metafile)
+		encoder.SetIndent("", " ")
+		err = encoder.Encode(metastruct)
 		checkerror(err)
 		metafile.Close()
 		contentfile, err := os.Create(contentfilepath)
