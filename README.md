@@ -6,7 +6,7 @@
 
 * 安装docker与dockre-compose
 * 运行以下命令
-`docker-compose -f docker/docker-compose.yml up -d`
+```
+make up # 在容器中启动项目
+```
 * 打开浏览器访问: `localhost:8080`即可
-
-
