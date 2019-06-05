@@ -33,4 +33,3 @@ func (ts *Tags) scan() error {
 	err := scan(ts)
 	return err
 }
-
