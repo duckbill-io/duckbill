@@ -33,3 +33,8 @@ func (ts *Tags) scan() error {
 	err := scan(ts)
 	return err
 }
+
+//	sortByName 标签列表按照标签名排序
+func (ts *Tags) sortByName() {
+	byName(*ts).sort()
+}

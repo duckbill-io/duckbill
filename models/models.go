@@ -103,6 +103,7 @@ func FindAllTags() (Tags, error) {
 	if err != nil {
 		return nil, err
 	}
+	tags.sortByName()
 	return tags, nil
 }
 
