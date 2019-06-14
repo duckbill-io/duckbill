@@ -14,3 +14,8 @@ func (p *Post) scan() (err error) {
 	err = scan(p)
 	return
 }
+
+// sortByCreatedAt 将文章列表按照创建时间到需排序
+func (ps *Posts) sortByCreatedAt() {
+	byCreatedAt(*ps).sort()
+}

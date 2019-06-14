@@ -44,6 +44,7 @@ func FindAllPosts() (Posts, error) {
 		return nil, err
 	}
 
+	posts.sortByCreatedAt()
 	return posts, nil
 }
 
