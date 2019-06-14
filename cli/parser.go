@@ -48,13 +48,13 @@ func (p *Parser) prepare() {
 	list, err := f.Readdir(-1)
 	f.Close()
 	checkerror(err)
-	// 筛选出有效的输入文件
+	// 筛选有效的输入文件
 	for i, j := 0, 0; i < len(list); i++ {
 		if ispostmd(list[i]) {
 			list[j] = list[i]
 			j++
 		}
-		if i == len(list) {
+		if i == len(list)-1 {
 			list = list[:j]
 		}
 	}
@@ -79,7 +79,6 @@ func (p *Parser) rebuild() {
 func (p *Parser) parse() {
 	tagsmap := map[string][]string{}
 	var err error
-
 	for i := range p.inputinfos {
 		mdfilename := filepath.Join(p.inputdir, p.inputinfos[i].Name())
 		// 分割文章元信息与内容
@@ -115,10 +114,11 @@ func (p *Parser) parse() {
 		contentfile.Close()
 		// 通过文章元信息筛选出tagsmap映射
 		for i := range metastruct.Tags {
-			if _, exist := tagsmap[metastruct.Name]; !exist {
-				tagsmap[metastruct.Tags[i]] = []string{metastruct.Name}
+			tagname := strings.ToLower(metastruct.Tags[i])
+			if _, exist := tagsmap[tagname]; !exist {
+				tagsmap[tagname] = []string{metastruct.Name}
 			} else {
-				tagsmap[metastruct.Tags[i]] = append(tagsmap[metastruct.Tags[i]], metastruct.Name)
+				tagsmap[tagname] = append(tagsmap[tagname], metastruct.Name)
 			}
 		}
 	}
