@@ -1,8 +1,5 @@
 ContainerName := iblog
 
-depensure:
-	rm -rf vendor
-	dep ensure
 parse:
 	go run cli.go
 serve:

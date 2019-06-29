@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"encoding/json"
-	"gopkg.in/russross/blackfriday.v2"
+	"github.com/russross/blackfriday"
 	"gopkg.in/yaml.v2"
 )
 
